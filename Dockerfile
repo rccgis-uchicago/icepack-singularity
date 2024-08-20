@@ -146,6 +146,16 @@ RUN rm -rf /opt/firedrake/petsc/**/externalpackages \
     && rm -f /opt/firedrake/petsc/src/**/tutorials/output/* \
     && rm -f /opt/firedrake/petsc/src/**/tests/output/*
 
+# Set environment variables
+ENV PETSC_DIR=/opt/firedrake/petsc \
+    SLEPC_DIR=/opt/firedrake/slepc \
+    MPICH_DIR=/opt/firedrake/petsc/packages/bin \
+    HDF5_DIR=/opt/firedrake/petsc/packages \
+    HDF5_MPI=ON \
+    OMP_NUM_THREADS=1 \
+    OPENBLAS_NUM_THREADS=1 \
+    PATH=$PATH:/opt/firedrake
+
 # Fetch and install Firedrake
 RUN curl -O https://raw.githubusercontent.com/firedrakeproject/firedrake/master/scripts/firedrake-install && \
     bash -c "python3 firedrake-install \
@@ -157,13 +167,3 @@ RUN curl -O https://raw.githubusercontent.com/firedrakeproject/firedrake/master/
     --mpicxx=/opt/firedrake/petsc/packages/bin/mpicxx \
     --mpif90=/opt/firedrake/petsc/packages/bin/mpif90 \
     --mpiexec=/opt/firedrake/petsc/packages/bin/mpiexec"
-
-# Set environment variables
-ENV PETSC_DIR=/opt/firedrake/petsc \
-    SLEPC_DIR=/opt/firedrake/slepc \
-    MPICH_DIR=/opt/firedrake/petsc/packages/bin \
-    HDF5_DIR=/opt/firedrake/petsc/packages \
-    HDF5_MPI=ON \
-    OMP_NUM_THREADS=1 \
-    OPENBLAS_NUM_THREADS=1 \
-    PATH=$PATH:/opt/firedrake

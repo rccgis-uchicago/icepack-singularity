@@ -149,6 +149,17 @@ From: ubuntu:24.04
     && rm -f /opt/firedrake/petsc/src/**/tutorials/output/* \
     && rm -f /opt/firedrake/petsc/src/**/tests/output/*
 
+%environment
+    export PETSC_DIR=/opt/firedrake/petsc
+    export SLEPC_DIR=/opt/firedrake/slepc
+    export MPICH_DIR=/opt/firedrake/petsc/packages/bin
+    export HDF5_DIR=/opt/firedrake/petsc/packages
+    export HDF5_MPI=ON
+    export OMP_NUM_THREADS=1
+    export OPENBLAS_NUM_THREADS=1
+    export PATH=$PATH:/opt/firedrake
+
+%post
     curl -O https://raw.githubusercontent.com/firedrakeproject/firedrake/master/scripts/firedrake-install
     bash -c "python3 firedrake-install \
     --no-package-manager \
@@ -160,12 +171,4 @@ From: ubuntu:24.04
     --mpif90=$MPICH_DIR/mpif90 \
     --mpiexec=$MPICH_DIR/mpiexec"
 
-%environment
-    export PETSC_DIR=/opt/firedrake/petsc
-    export SLEPC_DIR=/opt/firedrake/slepc
-    export MPICH_DIR=/opt/firedrake/petsc/packages/bin
-    export HDF5_DIR=/opt/firedrake/petsc/packages
-    export HDF5_MPI=ON
-    export OMP_NUM_THREADS=1
-    export OPENBLAS_NUM_THREADS=1
-    export PATH=$PATH:/opt/firedrake
+
