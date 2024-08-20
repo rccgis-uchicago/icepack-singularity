@@ -67,7 +67,7 @@ From: ubuntu:24.04
 
 # Build default Firedrake PETSc
     bash -c 'export PACKAGES=/opt/firedrake/petsc/packages; \
-    cd petsc; \
+    cd /opt/firedrake/petsc; \
     ./configure \
         --COPTFLAGS=-O3 -march=native -mtune=native \
         --CXXOPTFLAGS=-O3 -march=native -mtune=native \
@@ -100,13 +100,13 @@ From: ubuntu:24.04
 # Build default Firedrake SLEPc
     bash -c 'export PETSC_DIR=/opt/firedrake/petsc; \
     export PETSC_ARCH=default; \
-    cd slepc; \
+    cd /opt/firedrake/slepc; \
     ./configure; \
     make SLEPC_DIR=/opt/firedrake/slepc PETSC_DIR=/opt/firedrake/petsc PETSC_ARCH=default;'
 
 # Additionally build complex PETSc for Firedrake
     bash -c 'export PACKAGES=/opt/firedrake/petsc/packages; \
-    cd petsc; \
+    cd /opt/firedrake/petsc; \
     ./configure \
         --COPTFLAGS=-O3 -march=native -mtune=native \
         --CXXOPTFLAGS=-O3 -march=native -mtune=native \
@@ -139,7 +139,7 @@ From: ubuntu:24.04
 # Build complex Firedrake SLEPc
     bash -c 'export PETSC_DIR=/opt/firedrake/petsc; \
     export PETSC_ARCH=complex; \
-    cd slepc; \
+    cd /opt/firedrake/slepc; \
     ./configure; \
     make SLEPC_DIR=/opt/firedrake/slepc PETSC_DIR=/opt/firedrake/petsc PETSC_ARCH=complex;'
 
