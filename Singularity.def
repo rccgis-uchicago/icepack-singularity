@@ -1,0 +1,171 @@
+Bootstrap: docker
+From: ubuntu:24.04
+
+%post
+    apt-get update \
+    && apt-get -y dist-upgrade \
+    && DEBIAN_FRONTEND=noninteractive apt-get -y install tzdata \
+    && apt-get -y install curl vim docker.io \
+                 openssh-client build-essential autoconf automake \
+                 cmake gfortran git libopenblas-serial-dev \
+                 libtool python3-dev python3-pip python3-tk python3-venv \
+                 python3-requests zlib1g-dev libboost-dev sudo gmsh \
+                 bison flex ninja-build \
+                 libocct-ocaf-dev libocct-data-exchange-dev \
+                 swig graphviz \
+                 libcurl4-openssl-dev libxml2-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+    # Use a more sane locale
+    export LC_ALL=C.UTF-8
+
+    # Change the `ubuntu` user to `firedrake`
+    # and ensure that we do not run as root on self-hosted systems
+    usermod -d /opt/firedrake -m ubuntu && \
+    usermod -l firedrake ubuntu && \
+    groupmod -n firedrake ubuntu && \
+    usermod -aG sudo firedrake && \
+    echo "firedrake:docker" | chpasswd && \
+    echo "firedrake ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
+    ldconfig
+
+    # Fetch PETSc, SLEPc and eigen
+    git clone https://github.com/firedrakeproject/petsc.git /opt/firedrake/petsc
+    git clone https://github.com/firedrakeproject/slepc.git /opt/firedrake/slepc
+
+    # Build MPICH manually because we don't want PETSc to build it twice
+    bash -c 'cd /opt/firedrake/petsc; \
+    ./configure \
+        --COPTFLAGS=-O3 -march=native -mtune=native \
+        --CXXOPTFLAGS=-O3 -march=native -mtune=native \
+        --FOPTFLAGS=-O3 -march=native -mtune=native \
+        --with-c2html=0 \
+        --with-debugging=0 \
+        --with-fortran-bindings=0 \
+        --with-make-np=12 \
+        --with-shared-libraries=1 \
+        --with-zlib \
+        --download-fftw \
+        --download-hdf5 \
+        --download-hwloc \
+        --download-hypre \
+        --download-metis \
+        --download-mumps \
+        --download-mpich \
+        --download-mpich-device=ch3:sock \
+        --download-netcdf \
+        --download-pastix \
+        --download-pnetcdf \
+        --download-ptscotch \
+        --download-scalapack \
+        --download-suitesparse \
+        --download-superlu_dist \
+        PETSC_ARCH=packages; \
+        mv packages/include/petscconf.h packages/include/old_petscconf.nope;'
+# Don't run make here, we only want MPICH and HWLOC
+# It is also necessary to move `petscconf.h` so packages isn't treated like a working PETSc
+
+# Build default Firedrake PETSc
+    bash -c 'export PACKAGES=/opt/firedrake/petsc/packages; \
+    cd petsc; \
+    ./configure \
+        --COPTFLAGS=-O3 -march=native -mtune=native \
+        --CXXOPTFLAGS=-O3 -march=native -mtune=native \
+        --FOPTFLAGS=-O3 -march=native -mtune=native \
+        --with-c2html=0 \
+        --with-debugging=0 \
+        --with-fortran-bindings=0 \
+        --with-make-np=12 \
+        --with-shared-libraries=1 \
+        --with-bison \
+        --with-flex \
+        --with-zlib \
+        --with-fftw-dir=$PACKAGES \
+        --with-hdf5-dir=$PACKAGES \
+        --with-hwloc-dir=$PACKAGES \
+        --with-hypre-dir=$PACKAGES \
+        --with-metis-dir=$PACKAGES \
+        --with-mpi-dir=$PACKAGES \
+        --with-mumps-dir=$PACKAGES \
+        --with-netcdf-dir=$PACKAGES \
+        --with-pastix-dir=$PACKAGES \
+        --with-pnetcdf-dir=$PACKAGES \
+        --with-ptscotch-dir=$PACKAGES \
+        --with-scalapack-dir=$PACKAGES \
+        --with-suitesparse-dir=$PACKAGES \
+        --with-superlu_dist-dir=$PACKAGES \
+        PETSC_ARCH=default; \
+    make PETSC_DIR=/opt/firedrake/petsc PETSC_ARCH=default all;'
+
+# Build default Firedrake SLEPc
+    bash -c 'export PETSC_DIR=/opt/firedrake/petsc; \
+    export PETSC_ARCH=default; \
+    cd slepc; \
+    ./configure; \
+    make SLEPC_DIR=/opt/firedrake/slepc PETSC_DIR=/opt/firedrake/petsc PETSC_ARCH=default;'
+
+# Additionally build complex PETSc for Firedrake
+    bash -c 'export PACKAGES=/opt/firedrake/petsc/packages; \
+    cd petsc; \
+    ./configure \
+        --COPTFLAGS=-O3 -march=native -mtune=native \
+        --CXXOPTFLAGS=-O3 -march=native -mtune=native \
+        --FOPTFLAGS=-O3 -march=native -mtune=native \
+        --with-c2html=0 \
+        --with-debugging=0 \
+        --with-fortran-bindings=0 \
+        --with-make-np=12 \
+        --with-scalar-type=complex \
+        --with-shared-libraries=1 \
+        --with-bison \
+        --with-flex \
+        --with-zlib \
+        --with-fftw-dir=$PACKAGES \
+        --with-hdf5-dir=$PACKAGES \
+        --with-hwloc-dir=$PACKAGES \
+        --with-metis-dir=$PACKAGES \
+        --with-mpi-dir=$PACKAGES \
+        --with-mumps-dir=$PACKAGES \
+        --with-netcdf-dir=$PACKAGES \
+        --with-pastix-dir=$PACKAGES \
+        --with-pnetcdf-dir=$PACKAGES \
+        --with-ptscotch-dir=$PACKAGES \
+        --with-scalapack-dir=$PACKAGES \
+        --with-suitesparse-dir=$PACKAGES \
+        --with-superlu_dist-dir=$PACKAGES \
+        PETSC_ARCH=complex; \
+    make PETSC_DIR=/opt/firedrake/petsc PETSC_ARCH=complex all;'
+
+# Build complex Firedrake SLEPc
+    bash -c 'export PETSC_DIR=/opt/firedrake/petsc; \
+    export PETSC_ARCH=complex; \
+    cd slepc; \
+    ./configure; \
+    make SLEPC_DIR=/opt/firedrake/slepc PETSC_DIR=/opt/firedrake/petsc PETSC_ARCH=complex;'
+
+# Clean up unnecessary files
+    rm -rf /opt/firedrake/petsc/**/externalpackages \
+    && rm -rf /opt/firedrake/petsc/src/docs \
+    && rm -f /opt/firedrake/petsc/src/**/tutorials/output/* \
+    && rm -f /opt/firedrake/petsc/src/**/tests/output/*
+
+    curl -O https://raw.githubusercontent.com/firedrakeproject/firedrake/master/scripts/firedrake-install
+    bash -c "python3 firedrake-install \
+    --no-package-manager \
+    --disable-ssh \
+    --torch \
+    --honour-petsc-dir \
+    --mpicc=$MPICH_DIR/mpicc \
+    --mpicxx=$MPICH_DIR/mpicxx \
+    --mpif90=$MPICH_DIR/mpif90 \
+    --mpiexec=$MPICH_DIR/mpiexec"
+
+%environment
+    export PETSC_DIR=/opt/firedrake/petsc
+    export SLEPC_DIR=/opt/firedrake/slepc
+    export MPICH_DIR=/opt/firedrake/petsc/packages/bin
+    export HDF5_DIR=/opt/firedrake/petsc/packages
+    export HDF5_MPI=ON
+    export OMP_NUM_THREADS=1
+    export OPENBLAS_NUM_THREADS=1
+    export PATH=$PATH:/opt/firedrake
