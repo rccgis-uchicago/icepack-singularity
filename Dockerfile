@@ -157,13 +157,13 @@ ENV PETSC_DIR=/opt/firedrake/petsc \
     PATH=$PATH:/opt/firedrake
 
 # Fetch and install Firedrake
-RUN curl -O https://raw.githubusercontent.com/firedrakeproject/firedrake/master/scripts/firedrake-install && \
-    bash -c "python3 firedrake-install \
-    --no-package-manager \
-    --disable-ssh \
-    --torch \
-    --honour-petsc-dir \
-    --mpicc=/opt/firedrake/petsc/packages/bin/mpicc \
-    --mpicxx=/opt/firedrake/petsc/packages/bin/mpicxx \
-    --mpif90=/opt/firedrake/petsc/packages/bin/mpif90 \
-    --mpiexec=/opt/firedrake/petsc/packages/bin/mpiexec"
+# RUN curl -O https://raw.githubusercontent.com/firedrakeproject/firedrake/master/scripts/firedrake-install && \
+#     bash -c "python3 firedrake-install \
+#     --no-package-manager \
+#     --disable-ssh \
+#     --torch \
+#     --honour-petsc-dir \
+#     --mpicc=/opt/firedrake/petsc/packages/bin/mpicc \
+#     --mpicxx=/opt/firedrake/petsc/packages/bin/mpicxx \
+#     --mpif90=/opt/firedrake/petsc/packages/bin/mpif90 \
+#     --mpiexec=/opt/firedrake/petsc/packages/bin/mpiexec"
