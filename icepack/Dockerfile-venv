@@ -1,0 +1,22 @@
+FROM pnsinha/icepack:latest
+
+# Set the working directory
+WORKDIR /opt/firedrake
+
+# Create a shell script to check the directory and set the environment variables
+COPY set_persistent_dir.sh /opt/firedrake/set_persistent_dir.sh
+
+# Make the shell script executable
+RUN chmod +x /opt/firedrake/set_persistent_dir.sh
+
+# Run the shell script to set up persistent directories and environment variables
+RUN /opt/firedrake/set_persistent_dir.sh
+
+# Copy the shell script into the Docker image
+COPY activate_venv.sh /opt/firedrake/activate_venv.sh
+
+# Make the shell script executable
+RUN chmod +x /opt/firedrake/activate_venv.sh
+
+# Source the shell script in the shell profile
+RUN echo ". /opt/firedrake/activate_venv.sh" >> /etc/profile

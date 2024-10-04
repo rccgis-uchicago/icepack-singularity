@@ -1,0 +1,50 @@
+Bootstrap: docker
+From: pnsinha/icepack:latest
+
+%labels
+    Version v2024.09
+
+%files
+    set_persistent_dir.sh /opt/firedrake/set_persistent_dir.sh
+    activate_venv.sh /opt/firedrake/activate_venv.sh
+
+%post
+    # Make the shell scripts executable
+    . /opt/firedrake/firedrake/bin/activate
+    pip install siphash24
+    pip install pyyaml
+    chmod +x /opt/firedrake/set_persistent_dir.sh
+    chmod +x /opt/firedrake/activate_venv.sh
+#    export PATH="/opt/firedrake/firedrake/bin:$PATH"
+#    export PYOP2_CACHE_DIR=$PERSISTENT_DIR/pyop2
+#    export FIREDRAKE_TSFC_KERNEL_CACHE_DIR=$PERSISTENT_DIR/tsfc
+#    export XDG_CACHE_HOME=$PERSISTENT_DIR/xdg
+
+%environment
+    export PETSC_DIR=/opt/firedrake/petsc
+    export SLEPC_DIR=/opt/firedrake/slepc
+    export MPICH_DIR=/opt/firedrake/petsc/packages/bin
+    export HDF5_DIR=/opt/firedrake/petsc/packages
+    export HDF5_MPI=ON
+    export OMP_NUM_THREADS=1
+    export OPENBLAS_NUM_THREADS=1
+    export PATH=$PATH:/opt/firedrake
+    export PERSISTENT_DIR=/scratch/midway3/$USER/icepack_cache/
+    export PYOP2_CACHE_DIR=$PERSISTENT_DIR/pyop2
+    export FIREDRAKE_TSFC_KERNEL_CACHE_DIR=$PERSISTENT_DIR/tsfc
+    export XDG_CACHE_HOME=$PERSISTENT_DIR/xdg
+    export PATH="/opt/firedrake/firedrake/bin:$PATH"
+
+%runscript
+    # Commands to execute when the container is launched
+    . /opt/firedrake/activate_venv.sh
+    . /opt/firedrake/set_persistent_dir.sh
+    python3 "$@"
+    exec /bin/bash
+
+%help
+    This Singularity container sets up the Icepack environment.
+    It includes scripts to set up persistent directories and activate the virtual environment.
+    When the container is launched, it executes the following scripts:
+    1. /opt/firedrake/activate_venv.sh - Activates the virtual environment.
+    2. /opt/firedrake/set_persistent_dir.sh - Sets up persistent directories and environment variables.

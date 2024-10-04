@@ -1,1 +1,17 @@
 .pnotes/
+
+# Ignore log files
+*.log
+
+# Ignore Singularity image files
+*.sif
+
+# Ignore other temporary files
+*.tmp
+*.temp
+*.swp
+*.bak
+*.old
+*.orig
+*.rej
+
